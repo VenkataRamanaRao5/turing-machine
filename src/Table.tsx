@@ -1,36 +1,49 @@
-import { memo, useRef, useState } from "react";
+import { memo, useState } from "react";
 
 
-const Rows = () => {
-
+const Row = ({ arrSetter, index, arr }: { arrSetter: React.Dispatch<React.SetStateAction<any[][]>>, index: number, arr: string[] }) => {
+    const set2dArray = (rowI: number, colI: number, newVal: string, setter: React.Dispatch<React.SetStateAction<any[][]>>) => setter(e => e.map((row, rI) => rI === rowI ? row.map((val, cI) => cI === colI ? newVal : val) : row))
+    console.log(arr, index)
+    return (
+        <tr>
+            {arr.map((val, colIndex) =>
+                <td contentEditable="true" onBlur={(e) => set2dArray(index, colIndex, e.currentTarget.textContent as string, arrSetter)}>{val}</td>
+            )}
+            <td>
+                <button type="button" className="add" onClick={(e) => arrSetter(array => array.flatMap((row1, i) => i === index ? [row1, row1.map(() => '')] : [row1]))}>+</button>
+                <button type="button" className="append" onClick={(e) => arrSetter(array => array.flatMap((row1, i) => i === index ? [row1, row1] : [row1]))}>+=</button>
+                <button type="button" className="delete" onClick={(e) => arrSetter(array => array.flatMap((row1, i) => i === index ? [] : [row1]))}>-</button>
+            </td>
+        </tr>
+    )
 }
 
-const Table = memo(() => {
-    const [machType, setMachType] = useState("1")
-    const handleRadioChange = (e: React.FormEvent<HTMLInputElement>) => setMachType(e.currentTarget.value)
+interface tableProps{
+    header: string[];
+    tableElems: string[][];
+    setTableElems: (e: string[][]) => void;
+}
+
+const Table = memo(({header, tableElems, setTableElems}: tableProps) => {
+    const [tableArray, setTableArray] = useState(tableElems)
     return (
         <div>
-                <label className="radio-inline">
-                    <input type="radio" name="machineType" value="1" checked={machType === "1"} onChange={handleRadioChange} /> Primitive
-                </label>
-                <label className="radio-inline">
-                    <input type="radio" name="machineType" value="2" checked={machType === "2"} onChange={handleRadioChange} /> Multi-Tape
-                </label>
-                <label className="radio-inline">
-                    <input type="radio" name="machineType" value="3" checked={machType === "3"} onChange={handleRadioChange} /> Multi-Track
-                </label>
-        <table className="table table-bordered">
-            <tbody>
-            <tr>
-                <th>State</th>
-                <th>Symbol</th>
-                <th>Next State</th>
-                <th>Actions</th>
-            </tr>
-            </tbody>
-            
-
-        </table>
+            <table className="table table-bordered">
+                <tbody>
+                    <tr>
+                        {header.map(e => <th>{e}</th>)}
+                    </tr>
+                    {tableArray.map((r, i) =>
+                        <Row
+                            arrSetter={setTableArray}
+                            index={i}
+                            arr={r}
+                        />
+                    )}
+                </tbody>
+            </table>
+            <button type="button" onClick={() => {setTableElems(tableArray); sessionStorage.setItem('transitionTable', JSON.stringify(tableArray))}}>Set</button>
+            <button type="button" onClick={() => setTableElems([tableArray[0].fill('')])}>Clear</button>
         </div>
     )
 })
