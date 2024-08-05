@@ -60,3 +60,11 @@ tr{
 label {
   text-align: right;
 }
+
+#delayRange{
+  width: 20%;
+  min-width: 100px;
+  vertical-align: middle;
+  padding-left: 1%;
+  padding-right: 1%;
+}
