@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import Machine from './Machine'
 import Table from './Table'
+import Editor from './Editor'
 
 function App() {
 	let transitionTable = new Map([
@@ -36,6 +37,7 @@ function App() {
 	const [canvases, setCanvases] = useState(1)
 	const [tF, setTF] = useState(transitionTable)
 	const handleRadioChange = (e: React.FormEvent<HTMLInputElement>) => { setMachType(e.currentTarget.value); if (e.currentTarget.value === "1") setCanvases(1)}
+	const splitMultiLineDelimitedString = (s: string, delimiter: string | RegExp) => s.split('\n').map(e => e.split(delimiter))
 
 	let variables: Map<string, string[]> = new Map()
 
@@ -46,8 +48,8 @@ function App() {
 		variablesArray.forEach((elems) => variables.set(elems[0], elems[1].split(',')))
 		transitionArray.forEach((elems) => {
 			aliases = variables.get(elems[1])
-			let acts = Array.from(elems[3].matchAll(/\[([^\]]*)\]|([^,\s]+)/g)).map((e) => e[1] ? e[1] : e[0]).map(e => e.split(','))
-			let syms = Array.from(elems[1].matchAll(/\[([^\]]*)\]|([^,\s]+)/g)).map((e) => e[1] ? e[1] : e[0]).map(e => e.split(','))
+			let acts = Array.from(elems[3].matchAll(/\[([^\]]*)\]|([^,\s]+)/g)).map((e) => e[1] ? e[1] : e[0]).map(e => e.split('/, ?/'))
+			let syms = Array.from(elems[1].matchAll(/\[([^\]]*)\]|([^,\s]+)/g)).map((e) => e[1] ? e[1] : e[0]).map(e => e.split('/, ?/'))
 			if(aliases){
 				//to-do
 			}
@@ -76,27 +78,43 @@ function App() {
 			<label>No. of {machType === "2" ? "tapes" : "tracks"}</label>
 			<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value))} value={canvases}/>
 		</div>}
+		
 		<Machine
 			noOfCanvases={canvases}
 			isMultiTape={machType === "2"}
 			isMultiTrack={machType === "3"}
 			transitionFunction={tF}
-			delay={1000}
 			startState={transitionArray[0][0]}
 			finalStates={['f']}
 		/>
 		<button onClick={() => setIsTable(true)}>Use Table</button>
 		<button onClick={() => setIsTable(false)}>Use Editor</button>
-		<Table
-			header={['State', 'Symbol', 'Next State', 'Actions']}
-			tableElems={transitionArray}
-			setTableElems={(e) => setTransitionArray(e)}
-		/>
-		<Table
-			header={['Variable', 'Symbols']}
-			tableElems={variablesArray}
-			setTableElems={(e) => setVariablesArray(e)}
-		/>
+		{
+			isTable ? 
+			<>
+			<Table
+				header={['State', 'Symbol', 'Next State', 'Actions']}
+				tableElems={transitionArray}
+				setTableElems={(e) => setTransitionArray(e)}
+			/>
+			<Table
+				header={['Variable', 'Symbols']}
+				tableElems={variablesArray}
+				setTableElems={(e) => setVariablesArray(e)}
+			/>
+			</>
+			: 
+			<>
+				<Editor 
+					tableElems={transitionArray} 
+					setTableElems={(s) => setTransitionArray(splitMultiLineDelimitedString(s, /, ?/))}
+				/>
+				<Editor 
+					tableElems={variablesArray} 
+					setTableElems={(s) => setVariablesArray(splitMultiLineDelimitedString(s, /, ?/))}
+				/>
+			</>
+		}
 	</div>
 }
 /*
