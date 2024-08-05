@@ -14,6 +14,7 @@ function transitionCanvas(
     isPlaying: Ref<Boolean>,
     memory: Ref<string[][]>,
     delay: Ref<number>,
+    setNextState: (() => void) | undefined,
     index: number,
     headIndex: number,
     buffer: number,
@@ -21,8 +22,16 @@ function transitionCanvas(
 ) {
     return new Promise((resolve) => {
         if (memory.current[index].length === 0) {
-            console.log("Hey")
-            resolve(5)
+            if(setNextState !== undefined){
+                console.log("It is")
+                setTimeout(() => {
+                    console.log("Hey")
+                    setNextState()
+                    resolve(5)
+                }, delay.current)
+            }
+            else
+                resolve(5)
         }
         else if (isPlaying.current) {
             setTimeout(async () => {
@@ -32,38 +41,48 @@ function transitionCanvas(
                 console.log(headIndex, index)
                 switch (next) {
                     case 'L':
+                        const newLeftHeads = [...heads.current]
+                        const newLeftCanvases = [...canvases.current]
                         if (index !== headIndex) break
-                        if (heads.current[headIndex] === buffer)
-                            canvases.current[index] = [blank].concat(canvases.current[index])
+                        if (newLeftHeads[headIndex] === buffer) {
+                            newLeftCanvases[index] = [blank, ...newLeftCanvases[index]]
+                            setCanvases(newLeftCanvases)
+                        }
                         else
-                            heads.current[headIndex]--
-                        setHeads(heads.current)
+                            newLeftHeads[headIndex]--
+                        setHeads(newLeftHeads)
                         break
                     case 'R':
+                        const newRightHeads = [...heads.current]
+                        const newRightCanvases = [...canvases.current]
                         if (index !== headIndex) break
-                        if (heads.current[headIndex] + 1 === canvases.current.length - buffer)
-                            canvases.current[index] = canvases.current[index].concat([blank])
+                        if (newRightHeads[headIndex] + 1 === newRightCanvases.length - buffer) {
+                            newRightCanvases[index] = [...newRightCanvases[index], blank]
+                            setCanvases(newRightCanvases)
+                        }
                         else
-                            heads.current[headIndex]++
-                        setHeads(heads.current)
+                            newRightHeads[headIndex]++
+                        setHeads(newRightHeads)
                         break
                     case 'N':
                         break
                     case 'E': case blank:
-                        canvases.current[index][heads.current[headIndex]] = blank
-                        setCanvases(canvases.current)
+                        const newBlankedCanvases = [...canvases.current]
+                        newBlankedCanvases[index][heads.current[headIndex]] = blank
+                        setCanvases(newBlankedCanvases)
                         break
                     default:
-                        canvases.current[index][heads.current[headIndex]] = next
-                        setCanvases(canvases.current)
+                        const newCanvases = [...canvases.current]
+                        newCanvases[index][heads.current[headIndex]] = next
+                        setCanvases(newCanvases)
                 }
                 resolve(transitionCanvas(
                     canvases, setCanvases, heads, setHeads, state, setState,
-                    isPlaying, memory, delay, index, headIndex, buffer, blank
+                    isPlaying, memory, delay, setNextState, index, headIndex, buffer, blank
                 ))
             }, delay.current)
         }
-        else{
+        else {
             resolve(7)
         }
     })
@@ -86,36 +105,37 @@ async function transF(
     isMultiTrack: Boolean
 ) {
     const headIndex = (ind: number) => isMultiTrack ? 0 : ind
-    if(!isPlaying.current){
+    if (!isPlaying.current) {
         console.log("Nope")
     }
-    else if (memory.current.some(e => e.length > 0)){
-        console.log("Continuing", memory.current.toString())
+    else if (memory.current.some(e => e.length > 0)) {
+        console.log("Continuing", memory.current.toString(), state.current, nextState.current, state.current !== nextState.current)
         Promise.all(memory.current.map((_, index) => transitionCanvas(
             canvases, setCanvases, heads, setHeads, state, setState, isPlaying, memory,
-            delay, index, headIndex(index), buffer, blank
+            delay, 
+            (state.current !== nextState.current) ? () => {state.current = nextState.current; setState(nextState.current)} : undefined, 
+            index, headIndex(index), buffer, blank
         )))
-        .then((data) => {
-            console.log(data)
-            state.current = nextState.current
-            setState(state.current)
-        }).then(() => {
-            transF(
-                transFunc, canvases, setCanvases, heads, setHeads, state, setState,
-                isPlaying, memory, delay, nextState, blank, buffer, isMultiTrack
-            )
-        })
+            .then((data) => {
+                console.log(data)
+                
+            }).then(() => {
+                transF(
+                    transFunc, canvases, setCanvases, heads, setHeads, state, setState,
+                    isPlaying, memory, delay, nextState, blank, buffer, isMultiTrack
+                )
+            })
     }
-    else{
-        console.log("Starting", memory.current.toString())
+    else {
         let syms = canvases.current.map((e, i) => e[heads.current[headIndex(i)]])
+        console.log(syms.toString(), "Starting", canvases.current.toString())
         let transition = transFunc.get(JSON.stringify([state.current, syms]))
-        if(transition){
+        if (transition) {
             nextState.current = transition.next
-            memory.current = canvases.current.map((_, i) => transition.actions.map(e => e[i]))
+            memory.current = canvases.current.map((_, i) => transition.actions.map(e => e[i] === undefined ? 'N' : e[i]))
             console.log(memory.current.toString(), transition, JSON.stringify([state.current, syms]))
             transF(
-                transFunc, canvases, setCanvases, heads, setHeads, state, setState, 
+                transFunc, canvases, setCanvases, heads, setHeads, state, setState,
                 isPlaying, memory, delay, nextState, blank, buffer, isMultiTrack
             )
         }
@@ -126,7 +146,6 @@ interface Props {
     isMultiTape?: boolean;
     isMultiTrack?: boolean;
     transitionFunction: transitionFunctionType;
-    delay: number;
     startState: string;
     finalStates: string[];
 }
@@ -136,7 +155,6 @@ const Machine = ({
     isMultiTape = false,
     isMultiTrack = false,
     transitionFunction,
-    delay,
     startState,
     finalStates,
 }: Props) => {
@@ -159,91 +177,21 @@ const Machine = ({
     let [canvases, setCanvases] = useState(Array(noOfCanvases).fill('').map((e, i) => i == 0 ? first.current : dummyBlanks))
     const [heads, setHeads] = useState(Array(noOfTapes).fill(0).map(() => buffer))
     let trans: number = 0
-    
+
     const stateRef = useRef(state), headsRef = useRef(heads), canvasesRef = useRef(canvases),
-        isPlayingRef = useRef(isPlaying), blankRef = useRef(blank), delayRef = useRef(delay), 
+        isPlayingRef = useRef(isPlaying), blankRef = useRef(blank), delayRef = useRef(500),
         memory = useRef([]), nextStateRef = useRef('')
-    
+
     const index = (ind: number) => isMultiTape ? ind : 0
-
-    const startTimer = (isPlaying: boolean) => trans = isPlaying ? setTimeout(transF, delay, transitionFunction) : 0
-    const clearTimer = () => { if (trans) clearInterval(trans) }
-
-
-    /*const transition = (transFunc: transitionFunctionType) => {
-        console.log("Goooo")
-        let symbols = isMultiTape ? heads.map((pos, tpind) => canvases[tpind][pos]) : canvases.map((track) => track[heads[0]])
-        let key = JSON.stringify([state, symbols])
-        let transition = transFunc.get(key)
-        let newPos: number
-        console.log(transition, key, state, heads)
-        if (transition) {
-            transition.actions.forEach((action) => {
-                action.forEach((trans, ind) => {
-                    switch (trans) {
-                        case 'L':
-                            newPos = heads[ind] - 1
-                            if (newPos === 1)
-                                if (isMultiTape)
-                                    setCanvases(f => f.map((e1, i) => i === ind ? [blank].concat(e1) : e1))
-                                else
-                                    setCanvases((track) => track.map(e => [blank].concat(e)))
-                            else
-                                setHeads(hs => hs.map((head, index) => index === ind ? head - 1 : head))
-                            break;
-                        case 'R':
-                            newPos = heads[ind] + 1
-                            if (newPos + 1 === canvases[ind].length)
-                                if (isMultiTape)
-                                    setCanvases(f => f.map((e1, i) => i === ind ? e1.concat([blank]) : e1))
-                                else
-                                    setCanvases((track) => track.map(e => e.concat([blank])))
-                            else
-                                setHeads(hs => hs.map((head, index) => index === ind ? head + 1 : head))
-                            break;
-                        case blank: case 'E':
-                            setCanvases(f => f.map((e, i1) => i1 === ind ? e.map((sym, i) => i === heads[index(ind)] ? blank : sym) : e))
-                            break
-                        case 'N':
-                            break
-                        default:
-                            setCanvases(f => f.map((e, i1) => i1 === ind ? e.map((sym, i) => i === heads[index(ind)] ? trans : sym) : e))
-                    }
-                    console.log(heads[0])
-                })
-            })
-
-            setState(transition.next)
-        }
-        else {
-            clearTimer()
-            setIsPlaying(false)
-        }
-    }*/
-    
-    /*console.log("Hiya")
-    console.log(isPlaying)
-    console.log(trans, transitionFunction, input, noOfCanvases, canvases, startState)*/
-
-    /*useEffect(() => {
-        const handleResize = () => {
-            setWidth(window.innerWidth)
-            setHeight(window.innerHeight)
-        }
-
-        window.addEventListener("resize", handleResize)
-        console.log("Boo hooo")
-        return () => window.removeEventListener("resize", handleResize)
-    }, []);*/
 
     const pausePlay = () => {
         isPlayingRef.current = !isPlayingRef.current
         setIsPlaying(isPlayingRef.current)
         console.log("Yes")
-        if(isPlayingRef.current)   transF(
-            transitionFunction, canvasesRef, (s: string[][]) => {let boo = s;setCanvases(_=>boo)},
-            headsRef, (s: number[]) => {let boo = s; setHeads(_=>boo)}, 
-            stateRef, (s: string) => {let boo = s;setState(_=>boo)},
+        if (isPlayingRef.current) transF(
+            transitionFunction, canvasesRef, (s: string[][]) => { setCanvases(_ => s); canvasesRef.current = s },
+            headsRef, (s: number[]) => { setHeads(_ => s); headsRef.current = s },
+            stateRef, (s: string) => { setState(_ => s); stateRef.current = s },
             isPlayingRef, memory, delayRef, nextStateRef, blank, buffer, isMultiTrack
         )
         else console.log("no")
@@ -268,6 +216,10 @@ const Machine = ({
             <div>
                 <label htmlFor="blank" className="inputs">Blank:</label>
                 <input id="blank" type="text" name="blank" className="inputs" onChange={(e) => setBlank(e.currentTarget.value)} value={blank} />
+            </div>
+            <div>
+                <label htmlFor="delayRange" className="form-label">Delay</label>
+                <input type="range" className="form-range" id="delayRange" value={delayRef.current} onChange={e => (delayRef.current = parseInt(e.currentTarget.value))} step={1} min={1} max={2000} />
             </div>
             {canvases.map((tape, ind) =>
                 <Tape
