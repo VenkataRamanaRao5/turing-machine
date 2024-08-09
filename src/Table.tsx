@@ -3,7 +3,7 @@ import { memo, useState } from "react";
 
 const Row = ({ arrSetter, index, arr }: { arrSetter: React.Dispatch<React.SetStateAction<any[][]>>, index: number, arr: string[] }) => {
     const set2dArray = (rowI: number, colI: number, newVal: string, setter: React.Dispatch<React.SetStateAction<any[][]>>) => setter(e => e.map((row, rI) => rI === rowI ? row.map((val, cI) => cI === colI ? newVal : val) : row))
-    console.log(arr, index)
+    //console.log(arr, index)
     return (
         <tr>
             {arr.map((val, colIndex) =>
@@ -42,8 +42,8 @@ const Table = memo(({header, tableElems, setTableElems}: tableProps) => {
                     )}
                 </tbody>
             </table>
-            <button type="button" onClick={() => {setTableElems(tableArray); sessionStorage.setItem('transitionTable', JSON.stringify(tableArray))}}>Set</button>
-            <button type="button" onClick={() => setTableElems([tableArray[0].fill('')])}>Clear</button>
+            <button type="button" onClick={() => setTableElems(tableArray)}>Set</button>
+            <button type="button" onClick={() => { setTableArray([Array(tableElems[0].length).fill('')]); setTableElems([Array(tableElems[0].length).fill('')])}}>Clear</button>
         </div>
     )
 })
