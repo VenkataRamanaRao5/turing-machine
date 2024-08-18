@@ -30,53 +30,55 @@ function transitionCanvas(
             else
                 resolve(5)
         }
-        else if (isPlaying.current) {
+        else if(isPlaying.current){
             setTimeout(async () => {
-                console.log(memory.current[index].toString(), heads.current.toString())
-                let next = memory.current[index].shift() as string;
-                console.log(memory.current[index].toString())
-                console.log(headIndex, index)
-                switch (next) {
-                    case 'L':
-                        const newLeftHeads = [...heads.current]
-                        const newLeftCanvases = [...canvases.current]
-                        if (index !== headIndex) break
-                        if (newLeftHeads[headIndex] === buffer) {
-                            newLeftCanvases[index] = [blank, ...newLeftCanvases[index]]
-                            setCanvases(newLeftCanvases)
-                        }
-                        else
-                            newLeftHeads[headIndex]--
-                        setHeads(newLeftHeads)
-                        break
-                    case 'R':
-                        const newRightHeads = [...heads.current]
-                        const newRightCanvases = [...canvases.current]
-                        if (index !== headIndex) break
-                        if (newRightHeads[headIndex] + 1 === newRightCanvases.length - buffer) {
-                            newRightCanvases[index] = [...newRightCanvases[index], blank]
-                            setCanvases(newRightCanvases)
-                        }
-                        else
-                            newRightHeads[headIndex]++
-                        setHeads(newRightHeads)
-                        break
-                    case 'N':
-                        break
-                    case 'E': case blank:
-                        const newBlankedCanvases = [...canvases.current]
-                        newBlankedCanvases[index][heads.current[headIndex]] = blank
-                        setCanvases(newBlankedCanvases)
-                        break
-                    default:
-                        const newCanvases = [...canvases.current]
-                        newCanvases[index][heads.current[headIndex]] = next
-                        setCanvases(newCanvases)
+                if (isPlaying.current) {
+                    console.log(memory.current[index].toString(), heads.current.toString())
+                    let next = memory.current[index].shift() as string;
+                    console.log(memory.current[index].toString())
+                    console.log(headIndex, index)
+                    switch (next) {
+                        case 'L':
+                            const newLeftHeads = [...heads.current]
+                            const newLeftCanvases = [...canvases.current]
+                            if (index !== headIndex) break
+                            if (newLeftHeads[headIndex] === buffer) {
+                                newLeftCanvases[index] = [blank, ...newLeftCanvases[index]]
+                                setCanvases(newLeftCanvases)
+                            }
+                            else
+                                newLeftHeads[headIndex]--
+                            setHeads(newLeftHeads)
+                            break
+                        case 'R':
+                            const newRightHeads = [...heads.current]
+                            const newRightCanvases = [...canvases.current]
+                            if (index !== headIndex) break
+                            if (newRightHeads[headIndex] + 1 === newRightCanvases.length - buffer) {
+                                newRightCanvases[index] = [...newRightCanvases[index], blank]
+                                setCanvases(newRightCanvases)
+                            }
+                            else
+                                newRightHeads[headIndex]++
+                            setHeads(newRightHeads)
+                            break
+                        case 'N':
+                            break
+                        case 'E': case blank:
+                            const newBlankedCanvases = [...canvases.current]
+                            newBlankedCanvases[index][heads.current[headIndex]] = blank
+                            setCanvases(newBlankedCanvases)
+                            break
+                        default:
+                            const newCanvases = [...canvases.current]
+                            newCanvases[index][heads.current[headIndex]] = next
+                            setCanvases(newCanvases)
+                    }
+                    resolve(transitionCanvas(
+                        canvases, setCanvases, heads, setHeads, state, setState,
+                        isPlaying, memory, delay, setNextState, index, headIndex, buffer, blank
+                    ))
                 }
-                resolve(transitionCanvas(
-                    canvases, setCanvases, heads, setHeads, state, setState,
-                    isPlaying, memory, delay, setNextState, index, headIndex, buffer, blank
-                ))
             }, delay.current)
         }
         else {

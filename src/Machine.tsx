@@ -63,12 +63,15 @@ const Machine = ({
     useEffect(() => {
         canvasesRef.current = Array(noOfCanvases).fill('').map((e, i) => i == 0 ? first.current : dummyBlanks)
         setCanvases(canvasesRef.current)
-        //console.log(first.current.toString(), canvases.toString(), canvasesRef.current.toString())
+        console.log(first.current.toString(), canvases.toString(), transitionFunction)
         stateRef.current = startState
         setState(stateRef.current)
         headsRef.current = Array(noOfTapes).fill(0).map(() => buffer)
         setHeads(headsRef.current)
-    }, [input, noOfCanvases, isMultiTape, isMultiTrack, blank, startState])
+        isPlayingRef.current = false
+        setIsPlaying(false)
+        memory.current = []
+    }, [input, noOfCanvases, isMultiTape, isMultiTrack, blank, startState, transitionFunction])
 
     return (
         <div>

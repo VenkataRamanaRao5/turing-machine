@@ -24,7 +24,7 @@ interface tableProps{
     setTableElems: (e: string[][]) => void;
 }
 
-const Table = memo(({header, tableElems, setTableElems}: tableProps) => {
+const Table = ({header, tableElems, setTableElems}: tableProps) => {
     const [tableArray, setTableArray] = useState(tableElems)
     return (
         <div>
@@ -46,6 +46,6 @@ const Table = memo(({header, tableElems, setTableElems}: tableProps) => {
             <button type="button" onClick={() => { setTableArray([Array(tableElems[0].length).fill('')]); setTableElems([Array(tableElems[0].length).fill('')])}}>Clear</button>
         </div>
     )
-})
+}
 
 export default Table;
