@@ -3,6 +3,7 @@ import './App.css'
 import Machine from './Machine'
 import Table from './Table'
 import Editor from './Editor'
+import examples from './assets/exampleMachines'
 
 function App() {
 	let transitionTable = new Map([
@@ -17,19 +18,7 @@ function App() {
 		[JSON.stringify(['e', ['Y']]), { next: 'e', actions: [['Y'], ['R']] }],
 		[JSON.stringify(['e', ['']]), { next: 'f', actions: [[''], ['R']] }]
 	])
-	let _transitionTable = new Map([
-		[JSON.stringify(['b', ['0', 'B']]), { next: 'b', actions: [['R']] }],
-		[JSON.stringify(['b', ['1', 'B']]), { next: 'b', actions: [['R']] }],
-		[JSON.stringify(['b', ['B', 'B']]), { next: 'c', actions: [['L']] }],
-		[JSON.stringify(['c', ['0', 'B']]), { next: 'd', actions: [['0', '1'], ['L']] }],
-		[JSON.stringify(['c', ['1', 'B']]), { next: 'e', actions: [['1', '0'], ['L']] }],
-		[JSON.stringify(['e', ['1', 'B']]), { next: 'e', actions: [['1', '0'], ['L']] }],
-		[JSON.stringify(['e', ['0', 'B']]), { next: 'd', actions: [['0', '1'], ['L']] }],
-		[JSON.stringify(['e', ['B', 'B']]), { next: 'd', actions: [['B', '1'], ['L']] }],
-		[JSON.stringify(['d', ['1', 'B']]), { next: 'd', actions: [['1', '1'], ['L']] }],
-		[JSON.stringify(['d', ['0', 'B']]), { next: 'd', actions: [['0', '0'], ['L']] }],
-		[JSON.stringify(['d', ['B', 'B']]), { next: 'f', actions: [['L']] }],
-	])
+	
 	const [isTable, setIsTable] = useState(true)
 	const [transitionArray, setTransitionArray]: [string[][], React.Dispatch<React.SetStateAction<string[][]>>] = useState( sessionStorage.getItem('transitionTable') ? JSON.parse(sessionStorage.getItem('transitionTable') as string) : [Array(4).fill('')])
 	const [variablesArray, setVariablesArray]: [string[][], React.Dispatch<React.SetStateAction<string[][]>>] = useState(sessionStorage.getItem('variableTable') ? JSON.parse(sessionStorage.getItem('variableTable') as string) : [Array(2).fill('')])
@@ -37,7 +26,7 @@ function App() {
 	const [canvases, setCanvases] = useState(1)
 	const [tF, setTF] = useState(transitionTable)
 	const handleRadioChange = (e: React.FormEvent<HTMLInputElement>) => { setMachType(e.currentTarget.value); if (e.currentTarget.value === "1") setCanvases(1)}
-	const splitMultiLineDelimitedString = (s: string, delimiter: string | RegExp) => s.split('\n').map(e => e.split(delimiter))
+	const splitMultiLineDelimitedString = (s: string, delimiter: string | RegExp) => s.split('\n').map(e => e.split(delimiter).map(f => f.trim()))
 	const replace = (e: [string, string[], string, string[][]], lhs: string, rhs: string[]) => {
 		if(e[1].some(inp => inp == lhs)){
 			return rhs.map(value => 
@@ -55,7 +44,7 @@ function App() {
 	useEffect(() => {
 		transitionTable.clear()
 		variables = variablesArray.map((elems) => [elems[0], elems[1].split(/, ?/)])
-		//console.log(transitionArray)
+		console.log(transitionArray)
 		let newTransArray = transitionArray.map((elems) => {
 			let acts = Array.from(elems[3].matchAll(/\[([^\]]*)\]|([^,\s]+)/g)).map((e) => e[1] ? e[1] : e[0]).map(e => e.split(/, ?/))
 			let syms = Array.from(elems[1].matchAll(/\[([^\]]*)\]|([^,\s]+)/g)).map((e) => e[1] ? e[1] : e[0]).map(e => e.split(/, ?/))
@@ -72,7 +61,8 @@ function App() {
 			transitionTable.set(
 				JSON.stringify([elems[0], elems[1]]),
 				{ next: elems[2], actions: elems[3] })
-		})
+			})
+		console.log(transitionTable)
 		setTF(transitionTable)
 	}, [transitionArray, variablesArray])
 
@@ -104,9 +94,22 @@ function App() {
 		<div>
 			<button onClick={() => setIsTable(true)}>Use Table</button>
 			<button onClick={() => setIsTable(false)}>Use Editor</button>
-			<select defaultValue="Example Machines">
-				<option value="1">Add 1</option>
-				<option value="2">Spacify</option>
+			<select defaultValue="0^n1^n" onChange={(e) => {
+				console.log(e.currentTarget.value)
+				let mach = examples.get(e.currentTarget.value)
+				if(mach){
+					setMachType(mach.machType.toString())
+					setCanvases(mach.noOfCanvases)
+					setTransitionArray(mach.transitions.split(/\n */).map(row => row.trim().split(/; */)))
+					console.log(mach.transitions.split(/\n */).map(row => row.trim().split(/; */)).toString())
+					setIsTable(false)
+					setIsTable(true)
+				}
+				
+			}}>
+				<option value="Clear">Clear</option>
+				<option value="Add 1 (2 tracks)">Add 1 (2 tracks)</option>
+				<option value="0^n1^n">recognize 0^n1^n</option>
 			</select>
 		</div>
 		{
