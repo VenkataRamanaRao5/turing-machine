@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
     tableElems: string[][];
@@ -7,6 +7,9 @@ interface Props {
 
 export default function Editor({tableElems, setTableElems}: Props){
     const [tableInput, setTableInput] = useState(tableElems.map(e => e.reduce((l, r) => `${l};${r}`)).reduce((l, r) => `${l}\n${r}`))
+    useEffect(() => {
+        setTableInput(tableElems.map(e => e.reduce((l, r) => `${l};${r}`)).reduce((l, r) => `${l}\n${r}`))
+    }, [tableElems])
     return (
         <div className="output">
             <textarea 

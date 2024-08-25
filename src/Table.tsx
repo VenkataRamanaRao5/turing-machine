@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 
 const Row = ({ arrSetter, index, arr }: { arrSetter: React.Dispatch<React.SetStateAction<any[][]>>, index: number, arr: string[] }) => {
@@ -26,6 +26,9 @@ interface tableProps{
 
 const Table = ({header, tableElems, setTableElems}: tableProps) => {
     const [tableArray, setTableArray] = useState(tableElems)
+    useEffect(() => {
+        setTableArray(tableElems)
+    }, [tableElems])
     return (
         <div>
             <table className="table table-bordered">
