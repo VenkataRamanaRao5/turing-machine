@@ -38,7 +38,7 @@ const Machine = ({
     const [isPlaying, setIsPlaying] = useState(false)
 
     let [canvases, setCanvases] = useState(Array(noOfCanvases).fill('').map((e, i) => i == 0 ? first.current : dummyBlanks))
-    const [heads, setHeads] = useState(Array(noOfTapes).fill(0).map(() => buffer))
+    const [heads, setHeads] = useState(Array(noOfCanvases).fill(0).map(() => buffer))
     let trans: number = 0
 
     const stateRef = useRef(state), headsRef = useRef(heads), canvasesRef = useRef(canvases),
@@ -66,7 +66,7 @@ const Machine = ({
         console.log(first.current.toString(), canvases.toString(), transitionFunction)
         stateRef.current = startState
         setState(stateRef.current)
-        headsRef.current = Array(noOfTapes).fill(0).map(() => buffer)
+        headsRef.current = Array(noOfCanvases).fill(0).map(() => buffer)
         setHeads(headsRef.current)
         isPlayingRef.current = false
         setIsPlaying(false)
@@ -85,7 +85,7 @@ const Machine = ({
             </div>
             <div>
                 <label htmlFor="delayRange" className="form-label">Delay</label>
-                <input type="range" className="form-range" id="delayRange" value={delayRef.current} onChange={e => (delayRef.current = parseInt(e.currentTarget.value))} step={1} min={1} max={2000} />
+                <input type="range" className="form-range" id="delayRange" value={delayRef.current} onChange={e => {delayRef.current = parseInt(e.currentTarget.value)}} step={1} min={1} max={2000} />
             </div>
             <button onClick={pausePlay}>{isPlaying ? "⏸️" : "▶️"}</button>
             {canvases.map((tape, ind) =>
