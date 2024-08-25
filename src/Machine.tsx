@@ -85,7 +85,7 @@ const Machine = ({
             </div>
             <div>
                 <label htmlFor="delayRange" className="form-label">Delay</label>
-                <input type="range" className="form-range" id="delayRange" value={delayRef.current} onChange={e => {delayRef.current = parseInt(e.currentTarget.value)}} step={1} min={1} max={2000} />
+                <input type="range" className="form-range" id="delayRange" onMouseUp={e => { delayRef.current = parseInt(e.currentTarget.value); e.currentTarget.blur()}} step={1} min={1} max={2000} />
             </div>
             <button onClick={pausePlay}>{isPlaying ? "⏸️" : "▶️"}</button>
             {canvases.map((tape, ind) =>
