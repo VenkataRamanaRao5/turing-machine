@@ -1,5 +1,5 @@
-type exampleMachine = {machType: number, noOfCanvases: number, transitions: string}
-let examples: Map<String, exampleMachine> = new Map()
+type exampleMachine = {machType: number, noOfCanvases: number, transitions: string, varibles: string}
+let examples: Map<string, exampleMachine> = new Map()
 examples.set("Add 1 (2 tracks)", {
     machType: 3,
     noOfCanvases: 2,
@@ -14,7 +14,8 @@ examples.set("Add 1 (2 tracks)", {
         e;[B,B];d;[B,1],L
         d;[1,B];d;[1,1],L
         d;[0,B];d;[0,0],L
-        d;[B,B];f;L`
+        d;[B,B];f;L`,
+    varibles: ';'
 })
 
 examples.set("0^n1^n", {
@@ -30,7 +31,17 @@ examples.set("0^n1^n", {
         d;X;b;X,R
         d;Y;d;Y,L
         e;Y;e;Y,R
-        e;B;f;B,R`
+        e;B;f;B,R`,
+    varibles: `;`
     }
+)
+
+examples.set("move right", {
+    machType: 1,
+    noOfCanvases: 1,
+    transitions:
+        `q0;X;q0;R`,
+    varibles: `X;0,1`
+}
 )
 export default examples;

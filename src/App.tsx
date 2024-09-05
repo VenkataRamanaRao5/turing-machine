@@ -78,7 +78,7 @@ function App() {
 		console.log(transitionTable)
 		setTF(transitionTable)
 	}, [transitionArray, variablesArray])
-
+	//console.log(Array.from(examples.keys()))
 	//console.log(canvases, transitionTable)
 
 	return <div>
@@ -114,13 +114,12 @@ function App() {
 					setMachType(mach.machType.toString())
 					setCanvases(mach.noOfCanvases)
 					setTransitionArray(mach.transitions.split(/\n */).map(row => row.trim().split(/; */)))
+					setVariablesArray(mach.varibles.split(/\n */).map(row => row.trim().split(/; */)))
 					console.log(mach.transitions.split(/\n */).map(row => row.trim().split(/; */)).toString())
 				}
 
 			}}>
-				<option value="Clear">Clear</option>
-				<option value="Add 1 (2 tracks)">Add 1 (2 tracks)</option>
-				<option value="0^n1^n">recognize 0^n1^n</option>
+				{Array.from(examples.keys()).map(key => <option value={key}>{key}</option>)}
 			</select>
 		</div>
 		{
