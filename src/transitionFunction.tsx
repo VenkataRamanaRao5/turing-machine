@@ -51,7 +51,7 @@ function transitionCanvas(
                         case 'R':
                             const newRightHeads = [...heads.current]
                             const newRightCanvases = [...canvases.current]
-                            if (newRightHeads[index] + 1 === newRightCanvases.length - buffer) {
+                            if (newRightHeads[index] + 1 === newRightCanvases[index].length - buffer) {
                                 newRightCanvases[index] = [...newRightCanvases[index], blank]
                                 setCanvases(newRightCanvases)
                             }
