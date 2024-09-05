@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 
 const Row = ({ arrSetter, index, arr }: { arrSetter: React.Dispatch<React.SetStateAction<any[][]>>, index: number, arr: string[] }) => {
@@ -10,9 +10,9 @@ const Row = ({ arrSetter, index, arr }: { arrSetter: React.Dispatch<React.SetSta
                 <td contentEditable="true" onBlur={(e) => set2dArray(index, colIndex, e.currentTarget.textContent as string, arrSetter)}>{val}</td>
             )}
             <td>
-                <button type="button" className="add" onClick={(e) => arrSetter(array => array.flatMap((row1, i) => i === index ? [row1, row1.map(() => '')] : [row1]))}>+</button>
-                <button type="button" className="append" onClick={(e) => arrSetter(array => array.flatMap((row1, i) => i === index ? [row1, row1] : [row1]))}>+=</button>
-                <button type="button" className="delete" onClick={(e) => arrSetter(array => array.flatMap((row1, i) => i === index ? [] : [row1]))}>-</button>
+                <button type="button" className="add" onClick={(_) => arrSetter(array => array.flatMap((row1, i) => i === index ? [row1, row1.map(() => '')] : [row1]))}>+</button>
+                <button type="button" className="append" onClick={(_) => arrSetter(array => array.flatMap((row1, i) => i === index ? [row1, row1] : [row1]))}>+=</button>
+                <button type="button" className="delete" onClick={(_) => arrSetter(array => array.flatMap((row1, i) => i === index ? [] : [row1]))}>-</button>
             </td>
         </tr>
     )
