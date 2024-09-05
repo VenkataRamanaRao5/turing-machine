@@ -2,36 +2,71 @@
   margin: 0 auto;
   text-align: center;
 }
+
 .square{
-  width: 50px;
-  height: 50px;
-  resize: none;
+  width: 56px;
+  position: relative;
   display: block;
-  border: solid black 2px;
 }
 
 .symbol{
-  width: 50px;
+  width: 56px;
+  height: 56px;
   white-space: pre;
-  display: block;
-  resize: none;
-  border: solid black 2px;
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  border-bottom: solid black 3px;
+  border-top: solid black 3px;
+  border-left: solid black 3px;
+  border-right: solid black 3px;
+}
+
+.head-top{
+  top: 0px;
+  border-top: solid gold 6px;
+  height: 62px;
+}
+
+.head-bottom{
+  border-bottom: solid gold 6px;
+  height: 90px;
+}
+
+.head-side{
+  width: 68px;
+  border-left: solid gold 6px;
+  border-right: solid gold 6px;
+}
+
+.track:has(.head-top) > .square:not(.head-top), .tape > .square:not(.head-top){
+  top: 6px;
 }
 
 .track, .tape{
-  border: solid green 5px;
   display: flex;
+}
+
+.tape{
+  margin-bottom: 25px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
 }
 
-.track::-webkit-scrollbar, .tape::-webkit-scrollbar{
+#container:has(.track) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+}
+
+#container::-webkit-scrollbar, .tape::-webkit-scrollbar{
   display: none;
 }
 
-.tape{
-  border: solid orange 10px;
+#container{
+  position: relative;
 }
 
 table{

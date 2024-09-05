@@ -4,16 +4,23 @@ interface Props{
     symbol: string;
     state: string;
     blank: string;
-    shouldShowHead: boolean
+    shouldShowHead: number
 }
 
 const Square = function ({index, symbol, state, blank, shouldShowHead}: Props){
     //console.log("F", index, symbol)
+    const headOption = (n: number) => {
+        if(n == 0)  return ""
+        else if(n == 1) return " head-top head-side"
+        else if(n == 2) return " head-side"
+        else if(n == 3) return " head-bottom head-side"
+        else return " head-top head-bottom head-side"
+    }
     return (
-        <div key={index} className={shouldShowHead ? "square head" : "square"} onClick={() => {symbol = 'K'; console.log(symbol)}}>
-            <div className="symbol">{symbol === blank ? ' ' : symbol}</div>
-            {(shouldShowHead) && <span>{state}</span>}
-        </div>
+        <span key={index} className={"square" + headOption(shouldShowHead)} onClick={() => {symbol = 'K'; console.log(symbol)}}>
+            <span className="symbol">{symbol === blank ? ' ' : symbol}</span>
+            {(shouldShowHead >= 3) && <span>{state}</span>}
+        </span>
     );
 }
 

@@ -18,23 +18,36 @@ function App() {
 		[JSON.stringify(['e', ['Y']]), { next: 'e', actions: [['Y'], ['R']] }],
 		[JSON.stringify(['e', ['']]), { next: 'f', actions: [[''], ['R']] }]
 	])
-	
+
+	let tS = [
+		["b", "0", "c", "X,R"],
+		["b", "Y", "e", "Y,R"],
+		["c", "0", "c", "0,R"],
+		["c", "1", "d", "Y,L"],
+		["c", "Y", "c", "Y,R"],
+		["d", "0", "d", "0,L"],
+		["d", "X", "b", "X,R"],
+		["d", "Y", "d", "Y,L"],
+		["e", "Y", "e", "Y,R"],
+		["e", "B", "f", "B,R"]
+	]
+
 	const [isTable, setIsTable] = useState(true)
-	const [transitionArray, setTransitionArray]: [string[][], React.Dispatch<React.SetStateAction<string[][]>>] = useState( sessionStorage.getItem('transitionTable') ? JSON.parse(sessionStorage.getItem('transitionTable') as string) : [Array(4).fill('')])
+	const [transitionArray, setTransitionArray]: [string[][], React.Dispatch<React.SetStateAction<string[][]>>] = useState(sessionStorage.getItem('transitionTable') ? JSON.parse(sessionStorage.getItem('transitionTable') as string) : tS)
 	const [variablesArray, setVariablesArray]: [string[][], React.Dispatch<React.SetStateAction<string[][]>>] = useState(sessionStorage.getItem('variableTable') ? JSON.parse(sessionStorage.getItem('variableTable') as string) : [Array(2).fill('')])
 	const [machType, setMachType] = useState("1")
 	const [canvases, setCanvases] = useState(1)
 	const [tF, setTF] = useState(transitionTable)
-	const handleRadioChange = (e: React.FormEvent<HTMLInputElement>) => { setMachType(e.currentTarget.value); if (e.currentTarget.value === "1") setCanvases(1)}
+	const handleRadioChange = (e: React.FormEvent<HTMLInputElement>) => { setMachType(e.currentTarget.value); if (e.currentTarget.value === "1") setCanvases(1) }
 	const splitMultiLineDelimitedString = (s: string, delimiter: string | RegExp) => s.split('\n').map(e => e.split(delimiter).map(f => f.trim()))
 	const replace = (e: [string, string[], string, string[][]], lhs: string, rhs: string[]) => {
-		if(e[1].some(inp => inp == lhs)){
-			return rhs.map(value => 
+		if (e[1].some(inp => inp == lhs)) {
+			return rhs.map(value =>
 				[e[0], e[1].map(inp => inp === lhs ? value : inp),
-					e[2], e[3].map(actions => actions.map(action => action === lhs ? value : action))] as [string, string[], string, string[][]]
+				e[2], e[3].map(actions => actions.map(action => action === lhs ? value : action))] as [string, string[], string, string[][]]
 			)
 		}
-		else{
+		else {
 			return [e]
 		}
 	}
@@ -49,9 +62,9 @@ function App() {
 			let acts = Array.from(elems[3].matchAll(/\[([^\]]*)\]|([^,\s]+)/g)).map((e) => e[1] ? e[1] : e[0]).map(e => e.split(/, ?/))
 			let syms = Array.from(elems[1].matchAll(/\[([^\]]*)\]|([^,\s]+)/g)).map((e) => e[1] ? e[1] : e[0]).map(e => e.split(/, ?/))
 
-			if(syms.length == 0) syms.push([])
+			if (syms.length == 0) syms.push([])
 			return [elems[0], syms[0], elems[2], acts] as [string, string[], string, string[][]]
-			
+
 		})
 		console.log(newTransArray)
 		variables.forEach(mapping => {
@@ -61,7 +74,7 @@ function App() {
 			transitionTable.set(
 				JSON.stringify([elems[0], elems[1]]),
 				{ next: elems[2], actions: elems[3] })
-			})
+		})
 		console.log(transitionTable)
 		setTF(transitionTable)
 	}, [transitionArray, variablesArray])
@@ -80,9 +93,9 @@ function App() {
 		</label>
 		{(machType === "2" || machType === "3") && <div>
 			<label>No. of {machType === "2" ? "tapes" : "tracks"}</label>
-			<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value))} value={canvases}/>
+			<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value))} value={canvases} />
 		</div>}
-		
+
 		<Machine
 			noOfCanvases={canvases}
 			isMultiTape={machType === "2"}
@@ -97,15 +110,13 @@ function App() {
 			<select defaultValue="0^n1^n" onChange={(e) => {
 				console.log(e.currentTarget.value)
 				let mach = examples.get(e.currentTarget.value)
-				if(mach){
+				if (mach) {
 					setMachType(mach.machType.toString())
 					setCanvases(mach.noOfCanvases)
 					setTransitionArray(mach.transitions.split(/\n */).map(row => row.trim().split(/; */)))
 					console.log(mach.transitions.split(/\n */).map(row => row.trim().split(/; */)).toString())
-					setIsTable(false)
-					setIsTable(true)
 				}
-				
+
 			}}>
 				<option value="Clear">Clear</option>
 				<option value="Add 1 (2 tracks)">Add 1 (2 tracks)</option>
@@ -113,30 +124,30 @@ function App() {
 			</select>
 		</div>
 		{
-			isTable ? 
-			<>
-				<Table
-					header={['State', 'Symbol', 'Next State', 'Actions']}
-					tableElems={transitionArray}
-					setTableElems={(e) => {setTransitionArray(e); sessionStorage.setItem('transitionTable', JSON.stringify(e))}}
-				/>
-				<Table
-					header={['Variable', 'Symbols']}
-					tableElems={variablesArray}
-					setTableElems={(e) => { setVariablesArray(e); sessionStorage.setItem('variableTable', JSON.stringify(e))} }
-				/>
-			</>
-			: 
-			<>
-				<Editor 
-					tableElems={transitionArray} 
-					setTableElems={(s) => setTransitionArray(splitMultiLineDelimitedString(s, /; ?/))}
-				/>
-				<Editor 
-					tableElems={variablesArray} 
-					setTableElems={(s) => setVariablesArray(splitMultiLineDelimitedString(s, /, ?/))}
-				/>
-			</>
+			isTable ?
+				<>
+					<Table
+						header={['State', 'Symbol', 'Next State', 'Actions']}
+						tableElems={transitionArray}
+						setTableElems={(e) => { setTransitionArray(e); sessionStorage.setItem('transitionTable', JSON.stringify(e)) }}
+					/>
+					<Table
+						header={['Variable', 'Symbols']}
+						tableElems={variablesArray}
+						setTableElems={(e) => { setVariablesArray(e); sessionStorage.setItem('variableTable', JSON.stringify(e)) }}
+					/>
+				</>
+				:
+				<>
+					<Editor
+						tableElems={transitionArray}
+						setTableElems={(s) => setTransitionArray(splitMultiLineDelimitedString(s, /; ?/))}
+					/>
+					<Editor
+						tableElems={variablesArray}
+						setTableElems={(s) => setVariablesArray(splitMultiLineDelimitedString(s, /, ?/))}
+					/>
+				</>
 		}
 	</div>
 }

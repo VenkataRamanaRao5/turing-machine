@@ -6,7 +6,7 @@ interface Prop{
     state: string;
     blank: string;
     isMultiTrack: boolean;
-    shouldShowHead: boolean;
+    shouldShowHead: number;
 };
 
 function Tape({tape, headPos, state, blank, isMultiTrack, shouldShowHead}: Prop){
@@ -20,7 +20,7 @@ function Tape({tape, headPos, state, blank, isMultiTrack, shouldShowHead}: Prop)
                 symbol={sq}
                 state={state}
                 blank={blank}
-                shouldShowHead={shouldShowHead && (sqind === headPos)}
+                shouldShowHead={(sqind === headPos) ? shouldShowHead : 0}
             />)}
     </div>
     )
