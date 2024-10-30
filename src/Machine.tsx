@@ -8,6 +8,7 @@ interface Props {
     noOfCanvases: number;
     isMultiTape?: boolean;
     isMultiTrack?: boolean;
+    isHistory?: boolean;
     transitionFunction: transitionFunctionType;
     startState: string;
     finalStates: string[];
@@ -17,6 +18,7 @@ const Machine = ({
     noOfCanvases,
     isMultiTape = false,
     isMultiTrack = false,
+    isHistory = false,
     transitionFunction,
     startState,
     finalStates,
@@ -41,9 +43,14 @@ const Machine = ({
     const [heads, setHeads] = useState(Array(noOfCanvases).fill(0).map(() => buffer))
     //let trans: number = 0
 
-    const stateRef = useRef(state), headsRef = useRef(heads), canvasesRef = useRef(canvases),
-        isPlayingRef = useRef(isPlaying), delayRef = useRef(500),
-        memory = useRef([]), nextStateRef = useRef('')//, blankRef = useRef(blank)
+    const stateRef = useRef(state),
+            headsRef = useRef(heads), 
+            canvasesRef = useRef(canvases),
+            isPlayingRef = useRef(isPlaying), 
+            delayRef = useRef(500),
+            memory = useRef([]), 
+            nextStateRef = useRef(''),
+            containerRef = useRef<HTMLDivElement>(null)//, blankRef = useRef(blank)
 
     const index = (ind: number) => isMultiTape ? ind : 0
 
@@ -54,18 +61,63 @@ const Machine = ({
         else return 2
     }
 
+    let [history, setHistory] = useState<JSX.Element[][]>([canvases.map((tape, ind) =>
+        tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))])
+
     const pausePlay = () => {
         isPlayingRef.current = !isPlayingRef.current
         setIsPlaying(isPlayingRef.current)
         console.log("Yes", finalStates)
         if (isPlayingRef.current) transF(
-            transitionFunction, canvasesRef, (s: string[][]) => { setCanvases(_ => s); canvasesRef.current = s },
-            headsRef, (s: number[]) => { setHeads(_ => s); headsRef.current = s },
-            stateRef, (s: string) => { setState(_ => s); stateRef.current = s },
+            transitionFunction, canvasesRef, (s: string[][]) => { 
+                setCanvases(_ => s); 
+                canvasesRef.current = s;
+                console.log(headsRef.current)
+                if(isHistory){
+                    setHistory(hist => [...hist, s.map((tape, ind) =>
+                        tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
+                    ])
+                    containerRef.current?.scrollIntoView(false)
+                }
+                else
+                    setHistory([s.map((tape, ind) =>
+                        tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))])
+            },
+            headsRef, (s: number[]) => { 
+                setHeads(_ => s)
+                headsRef.current = s 
+                if (isHistory){
+                    setHistory(hist => [...hist, canvasesRef.current.map((tape, ind) =>
+                        tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
+                    ])
+                    containerRef.current?.scrollIntoView(false)
+                }
+                else
+                    setHistory([canvasesRef.current.map((tape, ind) =>
+                        tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))])
+            },
+            stateRef, (s: string) => { 
+                setState(_ => s)
+                stateRef.current = s 
+                if (isHistory) {
+                    setHistory(hist => [...hist, canvasesRef.current.map((tape, ind) =>
+                        tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
+                    ])
+                    containerRef.current?.scrollIntoView(false)
+                }
+                else
+                    setHistory([canvasesRef.current.map((tape, ind) =>
+                        tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))])
+            },
             isPlayingRef, memory, delayRef, nextStateRef, blank, buffer, isMultiTrack
         )
         else console.log("no")
     }
+
+    useEffect(() => {
+        if(isHistory == false)
+            setHistory(h => [h[h.length - 1]])
+    }, [isHistory])
 
     useEffect(() => {
         canvasesRef.current = Array(noOfCanvases).fill('').map((_, i) => i == 0 ? first.current : dummyBlanks)
@@ -78,38 +130,51 @@ const Machine = ({
         isPlayingRef.current = false
         setIsPlaying(false)
         memory.current = []
+        setHistory([canvasesRef.current.map((tape, ind) =>
+            tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))])
+        console.log(isHistory)
     }, [input, noOfCanvases, isMultiTape, isMultiTrack, blank, startState, transitionFunction])
 
     return (
         <div>
-            <div>
-                <label htmlFor="name" className="inputs">Input:</label>
-                <input id="name" type="text" name="name" className="inputs" onChange={(e) => setInput(e.currentTarget.value)} placeholder="Input" />
+            <div id="options">
+                <div>
+                    <label htmlFor="name" className="inputs">Input:</label>
+                    <input id="name" type="text" name="name" className="inputs" onChange={(e) => setInput(e.currentTarget.value)} placeholder="Input" />
+                </div>
+                <div>
+                    <label htmlFor="blank" className="inputs">Blank:</label>
+                    <input id="blank" type="text" name="blank" className="inputs" onChange={(e) => setBlank(e.currentTarget.value)} value={blank} />
+                </div>
+                <div>
+                    <label htmlFor="delayRange" className="form-label">Delay</label>
+                    <input type="range" className="form-range" id="delayRange" onChange={e => { delayRef.current = parseInt(e.currentTarget.value); e.currentTarget.blur()}} step={1} min={1} max={2000} defaultValue={delayRef.current}/>
+                </div>
+                <button onClick={pausePlay}>{isPlaying ? "⏸️" : "▶️"}</button>
             </div>
-            <div>
-                <label htmlFor="blank" className="inputs">Blank:</label>
-                <input id="blank" type="text" name="blank" className="inputs" onChange={(e) => setBlank(e.currentTarget.value)} value={blank} />
-            </div>
-            <div>
-                <label htmlFor="delayRange" className="form-label">Delay</label>
-                <input type="range" className="form-range" id="delayRange" onMouseUp={e => { delayRef.current = parseInt(e.currentTarget.value); e.currentTarget.blur()}} step={1} min={1} max={2000} defaultValue={delayRef.current}/>
-            </div>
-            <button onClick={pausePlay}>{isPlaying ? "⏸️" : "▶️"}</button>
-            <div id="container">
+            <div style={{height:"150px"}}></div>
+            <div id="container" ref={containerRef}>
 
-            {canvases.map((tape, ind) =>
-                <Tape
-                tape={tape}
-                headPos={heads[index(ind)]}
-                state={state}
-                blank={blank}
-                isMultiTrack={isMultiTrack}
-                shouldShowHead={head(isMultiTape, isPrimitive, noOfTracks as number, ind)}
-                />)
-            }
+                {history}
+                {/* {history.map((machine, _) =>
+                    machine.map((tape, ind) =>
+                        tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks)/>)
+                    )
+                } */}
             </div>
+            <div id="scrollHolder"></div>
         </div>
     );
 }
 
 export default Machine
+
+function tapeCreator(tape: string[], headsRef: React.MutableRefObject<number[]>, index: (ind: number) => number, ind: number, stateRef: React.MutableRefObject<string>, blank: string, isMultiTrack: boolean, head: (isMultiTape: boolean, isPrimitive: boolean, noOfTracks: number, ind: number) => 1 | 4 | 3 | 2, isMultiTape: boolean, isPrimitive: boolean, noOfTracks: number | boolean) {
+    return <Tape
+        tape={tape}
+        headPos={headsRef.current[index(ind)]}
+        state={stateRef.current}
+        blank={blank}
+        isMultiTrack={isMultiTrack}
+        shouldShowHead={head(isMultiTape, isPrimitive, noOfTracks as number, ind)} />;
+}

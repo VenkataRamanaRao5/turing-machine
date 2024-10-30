@@ -38,6 +38,8 @@ function App() {
 	const [machType, setMachType] = useState("1")
 	const [canvases, setCanvases] = useState(1)
 	const [tF, setTF] = useState(transitionTable)
+	const [isHistory, setIsHistory] = useState(false)
+	
 	const handleRadioChange = (e: React.FormEvent<HTMLInputElement>) => { setMachType(e.currentTarget.value); if (e.currentTarget.value === "1") setCanvases(1) }
 	const splitMultiLineDelimitedString = (s: string, delimiter: string | RegExp) => s.split('\n').map(e => e.split(delimiter).map(f => f.trim()))
 	const replace = (e: [string, string[], string, string[][]], lhs: string, rhs: string[]) => {
@@ -93,20 +95,23 @@ function App() {
 		</label>
 		{(machType === "2" || machType === "3") && <div>
 			<label>No. of {machType === "2" ? "tapes" : "tracks"}</label>
-			<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value))} value={canvases} />
+			<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value) || 1)} value={canvases} min="1"/>
 		</div>}
 
 		<Machine
 			noOfCanvases={canvases}
 			isMultiTape={machType === "2"}
 			isMultiTrack={machType === "3"}
+			isHistory={isHistory}
 			transitionFunction={tF}
 			startState={transitionArray[0][0]}
 			finalStates={['f']}
 		/>
+
 		<div>
 			<button onClick={() => setIsTable(true)}>Use Table</button>
 			<button onClick={() => setIsTable(false)}>Use Editor</button>
+			<button onClick={() => setIsHistory(h => !h)}>Set history {isHistory ? "Off" : "On"}</button>
 			<select defaultValue="0^n1^n" onChange={(e) => {
 				console.log(e.currentTarget.value)
 				let mach = examples.get(e.currentTarget.value)

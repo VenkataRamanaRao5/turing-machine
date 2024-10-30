@@ -3,6 +3,10 @@
   text-align: center;
 }
 
+.div{
+  position: relative;
+}
+
 .square{
   width: 56px;
   position: relative;
@@ -51,6 +55,7 @@
 .tape{
   margin-bottom: 25px;
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
 }
@@ -115,4 +120,8 @@ label {
   vertical-align: middle;
   padding-left: 1%;
   padding-right: 1%;
+}
+
+#options{
+  position: fixed;
 }
