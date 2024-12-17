@@ -124,8 +124,8 @@ function App() {
 				</label>
 			))}
 			{(machType === "2" || machType === "3") && <div>
-				<label>No. of {machType === "2" ? "tapes" : "tracks"}</label>
-				<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value) || 1)} value={canvases} min="1" />
+				<label className='inputs'>No. of {machType === "2" ? "tapes" : "tracks"}: </label>
+				<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value) || 1)} onBlur={(e) => e.currentTarget.value = canvases.toString()} min="1" />
 			</div>}
 		</div>
 		<button id="historyButton" onClick={toggleHistory}>Set history {isHistory ? "Off" : "On"}</button>
