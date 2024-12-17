@@ -130,7 +130,7 @@ function App() {
 		</div>
 		<button id="historyButton" onClick={toggleHistory}>Set history {isHistory ? "Off" : "On"}</button>
 
-		<div id="historyType" className="d-flex justify-content-center align-items-center">
+		<div id="historyType" className="justify-content-center align-items-center">
 			{isHistory && historyKeys.map(key => (
 				<div key={key} className="form-check form-switch">
 					<input
