@@ -7,7 +7,6 @@ function transitionCanvas(
     heads: Ref<number[]>,
     setHeads: (s: number[]) => void,
     state: Ref<string>,
-    setState: (s: string) => void,
     isPlaying: Ref<Boolean>,
     memory: Ref<string[][]>,
     delay: Ref<number>,
@@ -72,7 +71,7 @@ function transitionCanvas(
                             setCanvases(newCanvases)
                     }
                     resolve(transitionCanvas(
-                        canvases, setCanvases, heads, setHeads, state, setState,
+                        canvases, setCanvases, heads, setHeads, state,
                         isPlaying, memory, delay, setNextState, index, buffer, blank
                     ))
                 }
@@ -87,11 +86,11 @@ function transitionCanvas(
 async function transF(
     transFunc: transitionFunctionType,
     canvases: Ref<string[][]>,
-    setCanvases: (s: string[][]) => void,
+    setCanvases: (s: string[][], shouldDuplicate: boolean) => void,
     heads: Ref<number[]>,
-    setHeads: (s: number[]) => void,
+    setHeads: (s: number[], shouldDuplicate: boolean) => void,
     state: Ref<string>,
-    setState: (s: string) => void,
+    setState: (s: string, shouldDuplicate: boolean) => void,
     isPlaying: Ref<Boolean>,
     memory: Ref<string[][]>,
     delay: Ref<number>,
@@ -106,9 +105,12 @@ async function transF(
     else if (memory.current.some(e => e.length > 0)) {
         console.log("Continuing", memory.current.toString(), state.current, nextState.current, state.current !== nextState.current)
         Promise.all(memory.current.map((_, index) => transitionCanvas(
-            canvases, setCanvases, heads, setHeads, state, setState, isPlaying, memory,
-            delay,
-            (state.current !== nextState.current) ? () => { state.current = nextState.current; setState(nextState.current) } : undefined,
+            canvases,
+            (canvases: string[][]) => setCanvases(canvases, index === memory.current.length - 1), 
+            heads, 
+            (heads: number[]) => setHeads(heads, index === memory.current.length - 1), 
+            state, isPlaying, memory, delay,
+            (state.current !== nextState.current) ? () => { state.current = nextState.current; setState(nextState.current, index === memory.current.length - 1) } : undefined,
             index, buffer, blank
         )))
             .then((data) => {

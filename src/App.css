@@ -72,6 +72,8 @@
 
 #container{
   position: relative;
+  padding-top: 15px;
+  padding-bottom: 15px;
 }
 
 table{
@@ -120,8 +122,4 @@ label {
   vertical-align: middle;
   padding-left: 1%;
   padding-right: 1%;
-}
-
-#options{
-  position: fixed;
 }

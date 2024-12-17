@@ -39,7 +39,33 @@ function App() {
 	const [canvases, setCanvases] = useState(1)
 	const [tF, setTF] = useState(transitionTable)
 	const [isHistory, setIsHistory] = useState(false)
-	
+	const [historyStates, setHistoryStates] = useState({
+		isCanvasHistory: false,
+		isHeadHistory: false,
+		isStateHistory: false,
+	})
+
+	const handleToggle = (key: keyof typeof historyStates) => {
+		setHistoryStates((prevStates) => ({
+			...prevStates,
+			[key]: !prevStates[key],
+		}));
+	};
+
+	const toggleHistory = () => {
+		setIsHistory((h) => {
+			const newHistoryState = !h;
+			setHistoryStates({
+				isCanvasHistory: newHistoryState,
+				isHeadHistory: newHistoryState,
+				isStateHistory: newHistoryState,
+			});
+			return newHistoryState;
+		});
+	};
+
+	const historyKeys = Object.keys(historyStates);
+
 	const handleRadioChange = (e: React.FormEvent<HTMLInputElement>) => { setMachType(e.currentTarget.value); if (e.currentTarget.value === "1") setCanvases(1) }
 	const splitMultiLineDelimitedString = (s: string, delimiter: string | RegExp) => s.split('\n').map(e => e.split(delimiter).map(f => f.trim()))
 	const replace = (e: [string, string[], string, string[][]], lhs: string, rhs: string[]) => {
@@ -84,25 +110,46 @@ function App() {
 	//console.log(canvases, transitionTable)
 
 	return <div>
-		<label className="radio-inline">
-			<input type="radio" name="machineType" value="1" checked={machType === "1"} onChange={handleRadioChange} /> Primitive
-		</label>
-		<label className="radio-inline">
-			<input type="radio" name="machineType" value="2" checked={machType === "2"} onChange={handleRadioChange} /> Multi-Tape
-		</label>
-		<label className="radio-inline">
-			<input type="radio" name="machineType" value="3" checked={machType === "3"} onChange={handleRadioChange} /> Multi-Track
-		</label>
-		{(machType === "2" || machType === "3") && <div>
-			<label>No. of {machType === "2" ? "tapes" : "tracks"}</label>
-			<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value) || 1)} value={canvases} min="1"/>
-		</div>}
+		<div id="machineType">
+			{['1', '2', '3'].map(type => (
+				<label key={type} className="radio-inline">
+					<input
+						type="radio"
+						name="machineType"
+						value={type}
+						checked={machType === type}
+						onChange={handleRadioChange}
+					/>
+					{type === '1' ? 'Primitive' : type === '2' ? 'Multi-Tape' : 'Multi-Track'}
+				</label>
+			))}
+			{(machType === "2" || machType === "3") && <div>
+				<label>No. of {machType === "2" ? "tapes" : "tracks"}</label>
+				<input type="number" onChange={(e) => setCanvases(parseInt(e.currentTarget.value) || 1)} value={canvases} min="1" />
+			</div>}
+		</div>
+		<button id="historyButton" onClick={toggleHistory}>Set history {isHistory ? "Off" : "On"}</button>
+
+		<div id="historyType" className="d-flex justify-content-center align-items-center">
+			{isHistory && historyKeys.map(key => (
+				<div key={key} className="form-check form-switch">
+					<input
+						className="form-check-input"
+						type="checkbox"
+						id={key}
+						checked={historyStates[key as keyof typeof historyStates]}
+						onChange={() => handleToggle(key as keyof typeof historyStates)}
+					/>
+					<label htmlFor={key}>{key}</label>
+				</div>
+			))}
+		</div>
 
 		<Machine
 			noOfCanvases={canvases}
 			isMultiTape={machType === "2"}
 			isMultiTrack={machType === "3"}
-			isHistory={isHistory}
+			isHistory={historyStates}
 			transitionFunction={tF}
 			startState={transitionArray[0][0]}
 			finalStates={['f']}
@@ -111,7 +158,6 @@ function App() {
 		<div>
 			<button onClick={() => setIsTable(true)}>Use Table</button>
 			<button onClick={() => setIsTable(false)}>Use Editor</button>
-			<button onClick={() => setIsHistory(h => !h)}>Set history {isHistory ? "Off" : "On"}</button>
 			<select defaultValue="0^n1^n" onChange={(e) => {
 				console.log(e.currentTarget.value)
 				let mach = examples.get(e.currentTarget.value)

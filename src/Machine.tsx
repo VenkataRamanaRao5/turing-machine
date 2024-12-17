@@ -8,7 +8,7 @@ interface Props {
     noOfCanvases: number;
     isMultiTape?: boolean;
     isMultiTrack?: boolean;
-    isHistory?: boolean;
+    isHistory: { isCanvasHistory: boolean; isHeadHistory: boolean; isStateHistory: boolean; };
     transitionFunction: transitionFunctionType;
     startState: string;
     finalStates: string[];
@@ -18,7 +18,7 @@ const Machine = ({
     noOfCanvases,
     isMultiTape = false,
     isMultiTrack = false,
-    isHistory = false,
+    isHistory,
     transitionFunction,
     startState,
     finalStates,
@@ -69,44 +69,44 @@ const Machine = ({
         setIsPlaying(isPlayingRef.current)
         console.log("Yes", finalStates)
         if (isPlayingRef.current) transF(
-            transitionFunction, canvasesRef, (s: string[][]) => { 
+            transitionFunction, canvasesRef, (s: string[][], shouldDuplicate: boolean) => { 
                 setCanvases(_ => s); 
                 canvasesRef.current = s;
                 console.log(headsRef.current)
-                if(isHistory){
+                if(isHistory.isCanvasHistory && shouldDuplicate) {
                     setHistory(hist => [...hist, s.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
                     ])
                     containerRef.current?.scrollIntoView(false)
                 }
                 else
-                    setHistory([s.map((tape, ind) =>
+                    setHistory(hist => [...hist.slice(0, hist.length - 1), s.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))])
             },
-            headsRef, (s: number[]) => { 
+            headsRef, (s: number[], shouldDuplicate: boolean) => { 
                 setHeads(_ => s)
                 headsRef.current = s 
-                if (isHistory){
+                if (isHistory.isHeadHistory && shouldDuplicate) {
                     setHistory(hist => [...hist, canvasesRef.current.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
                     ])
                     containerRef.current?.scrollIntoView(false)
                 }
                 else
-                    setHistory([canvasesRef.current.map((tape, ind) =>
+                    setHistory(hist => [...hist.slice(0, hist.length - 1), canvasesRef.current.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))])
             },
-            stateRef, (s: string) => { 
+            stateRef, (s: string, shouldDuplicate: boolean) => { 
                 setState(_ => s)
                 stateRef.current = s 
-                if (isHistory) {
+                if (isHistory.isStateHistory && shouldDuplicate) {
                     setHistory(hist => [...hist, canvasesRef.current.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
                     ])
                     containerRef.current?.scrollIntoView(false)
                 }
                 else
-                    setHistory([canvasesRef.current.map((tape, ind) =>
+                    setHistory(hist => [...hist.slice(0, hist.length - 1), canvasesRef.current.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))])
             },
             isPlayingRef, memory, delayRef, nextStateRef, blank, buffer, isMultiTrack
@@ -115,9 +115,9 @@ const Machine = ({
     }
 
     useEffect(() => {
-        if(isHistory == false)
+        if(!(isHistory.isCanvasHistory || isHistory.isHeadHistory || isHistory.isStateHistory))
             setHistory(h => [h[h.length - 1]])
-    }, [isHistory])
+    }, [isHistory.isCanvasHistory, isHistory.isHeadHistory, isHistory.isStateHistory])
 
     useEffect(() => {
         canvasesRef.current = Array(noOfCanvases).fill('').map((_, i) => i == 0 ? first.current : dummyBlanks)
@@ -152,8 +152,7 @@ const Machine = ({
                 </div>
                 <button onClick={pausePlay}>{isPlaying ? "⏸️" : "▶️"}</button>
             </div>
-            <div style={{height:"150px"}}></div>
-            <div id="container" ref={containerRef}>
+            <div id="container">
 
                 {history}
                 {/* {history.map((machine, _) =>
@@ -162,7 +161,7 @@ const Machine = ({
                     )
                 } */}
             </div>
-            <div id="scrollHolder"></div>
+            <div id="scrollHolder" ref={containerRef}></div>
         </div>
     );
 }
