@@ -30,7 +30,7 @@ const Table = ({header, tableElems, setTableElems}: tableProps) => {
         setTableArray(tableElems)
     }, [tableElems])
     return (
-        <div>
+        <div className="output">
             <table className="table table-bordered">
                 <tbody>
                     <tr>

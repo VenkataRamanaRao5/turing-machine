@@ -77,7 +77,6 @@ const Machine = ({
                     setHistory(hist => [...hist, s.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
                     ])
-                    containerRef.current?.scrollIntoView(false)
                 }
                 else
                     setHistory(hist => [...hist.slice(0, hist.length - 1), s.map((tape, ind) =>
@@ -90,7 +89,7 @@ const Machine = ({
                     setHistory(hist => [...hist, canvasesRef.current.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
                     ])
-                    containerRef.current?.scrollIntoView(false)
+                    console.log(containerRef.current?.parentElement?.offsetTop)
                 }
                 else
                     setHistory(hist => [...hist.slice(0, hist.length - 1), canvasesRef.current.map((tape, ind) =>
@@ -103,7 +102,6 @@ const Machine = ({
                     setHistory(hist => [...hist, canvasesRef.current.map((tape, ind) =>
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks))
                     ])
-                    containerRef.current?.scrollIntoView(false)
                 }
                 else
                     setHistory(hist => [...hist.slice(0, hist.length - 1), canvasesRef.current.map((tape, ind) =>
@@ -113,6 +111,10 @@ const Machine = ({
         )
         else console.log("no")
     }
+
+    useEffect(() => {
+        containerRef.current?.scrollIntoView({block: "nearest", behavior: "smooth"})
+    })
 
     useEffect(() => {
         if(!(isHistory.isCanvasHistory || isHistory.isHeadHistory || isHistory.isStateHistory))
@@ -160,8 +162,8 @@ const Machine = ({
                         tapeCreator(tape, headsRef, index, ind, stateRef, blank, isMultiTrack, head, isMultiTape, isPrimitive, noOfTracks)/>)
                     )
                 } */}
+                <div id="scrollHolder" ref={containerRef}></div>
             </div>
-            <div id="scrollHolder" ref={containerRef}></div>
         </div>
     );
 }
