@@ -44,4 +44,33 @@ examples.set("move right", {
     varibles: `X;0,1`
 }
 )
+
+examples.set("collatz", {
+    machType: 1,
+    noOfCanvases: 1,
+    transitions:
+        `r;X;r;R
+        r;B;s;L
+        s;0;r;B, L
+        s;1;o1;1, L
+        z;0;z;0, L
+        z;1;o1;1, L
+        o1;E;z1;1, L
+        o1;1;o2;0, L
+        z1;1;o1;1, L
+        z1;0;z;0, L
+        z1;B;pr;R
+        o2;1;o3;1, L
+        o2;E;o1;0, L
+        o3;1;o3;1, L
+        o3;E;o1;0, L
+        pr;X;pr;R
+        pr;B;p;L
+        p;E;r;1, R
+        p;1;p;0, L`,
+    varibles: 
+        `X;0, 1
+        E;0, B`
+}
+)
 export default examples;
